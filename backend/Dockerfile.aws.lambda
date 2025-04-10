@@ -1,0 +1,23 @@
+FROM public.ecr.aws/lambda/python:3.12
+
+# Copy function code
+COPY ./app ${LAMBDA_TASK_ROOT}/app
+RUN ls -a ${LAMBDA_TASK_ROOT}
+
+COPY .env ${LAMBDA_TASK_ROOT}
+
+# Install the function's dependencies using file requirements.txt
+# from your project folder.
+# If you don't have a requirements.txt, 
+# create one using the bash script `backend/scripts/aws_lambda_prep.sh`.
+COPY requirements.txt .
+# Install the specified packages
+RUN pip3 install -r requirements.txt --target "${LAMBDA_TASK_ROOT}" -U --no-cache-dir
+
+# If you want to use psycopg2 instead of pg8000. I ran into issues with psycopg and aws's images.
+# RUN pip3 install --platform manylinux2014_aarch64 --target="${LAMBDA_TASK_ROOT}" --implementation cp --python-version 3.12.9 --only-binary=:all: --upgrade psycopg2-binary
+
+# RUN ls -a ${LAMBDA_TASK_ROOT}
+
+# Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
+CMD [ "app.main.handler" ]
